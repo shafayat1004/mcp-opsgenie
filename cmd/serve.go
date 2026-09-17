@@ -105,7 +105,7 @@ func runServeWithVersion(apiURL, envVar, logFile, transport, httpAddr, sseEndpoi
 
 	slog.Info("Initialized MCP server successfully, waiting for client connections...")
 
-	fmt.Printf("Starting MCP OpsGenie server with %s transport...\n", transport)
+	fmt.Fprintf(os.Stderr, "Starting MCP OpsGenie server with %s transport...\n", transport)
 
 	// Start the appropriate server based on transport type
 	switch transport {
@@ -142,11 +142,11 @@ func runStdioServer(mcpSrv *server.MCPServer) error {
 			}
 			return fmt.Errorf("server stopped with error: %w", err)
 		} else {
-			fmt.Println("Server stopped normally")
+			fmt.Fprintln(os.Stderr, "Server stopped normally")
 		}
 	}
 
-	fmt.Println("Server gracefully stopped")
+	fmt.Fprintln(os.Stderr, "Server gracefully stopped")
 	return nil
 }
 
@@ -158,9 +158,9 @@ func runSSEServer(mcpSrv *server.MCPServer, addr, sseEndpoint, messageEndpoint s
 		server.WithMessageEndpoint(messageEndpoint),
 	)
 
-	fmt.Printf("SSE server starting on %s\n", addr)
-	fmt.Printf("  SSE endpoint: %s\n", sseEndpoint)
-	fmt.Printf("  Message endpoint: %s\n", messageEndpoint)
+	fmt.Fprintf(os.Stderr, "SSE server starting on %s\n", addr)
+	fmt.Fprintf(os.Stderr, "  SSE endpoint: %s\n", sseEndpoint)
+	fmt.Fprintf(os.Stderr, "  Message endpoint: %s\n", messageEndpoint)
 
 	// Start server in goroutine
 	serverDone := make(chan error, 1)
@@ -174,7 +174,7 @@ func runSSEServer(mcpSrv *server.MCPServer, addr, sseEndpoint, messageEndpoint s
 	// Wait for either shutdown signal or server completion
 	select {
 	case <-ctx.Done():
-		fmt.Println("Shutdown signal received, stopping SSE server...")
+		fmt.Fprintln(os.Stderr, "Shutdown signal received, stopping SSE server...")
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 		if err := sseServer.Shutdown(shutdownCtx); err != nil {
@@ -184,11 +184,11 @@ func runSSEServer(mcpSrv *server.MCPServer, addr, sseEndpoint, messageEndpoint s
 		if err != nil {
 			return fmt.Errorf("SSE server stopped with error: %w", err)
 		} else {
-			fmt.Println("SSE server stopped normally")
+			fmt.Fprintln(os.Stderr, "SSE server stopped normally")
 		}
 	}
 
-	fmt.Println("SSE server gracefully stopped")
+	fmt.Fprintln(os.Stderr, "SSE server gracefully stopped")
 	return nil
 }
 
@@ -199,8 +199,8 @@ func runStreamableHTTPServer(mcpSrv *server.MCPServer, addr, endpoint string, ct
 		server.WithEndpointPath(endpoint),
 	)
 
-	fmt.Printf("Streamable HTTP server starting on %s\n", addr)
-	fmt.Printf("  HTTP endpoint: %s\n", endpoint)
+	fmt.Fprintf(os.Stderr, "Streamable HTTP server starting on %s\n", addr)
+	fmt.Fprintf(os.Stderr, "  HTTP endpoint: %s\n", endpoint)
 
 	// Start server in goroutine
 	serverDone := make(chan error, 1)
@@ -214,7 +214,7 @@ func runStreamableHTTPServer(mcpSrv *server.MCPServer, addr, endpoint string, ct
 	// Wait for either shutdown signal or server completion
 	select {
 	case <-ctx.Done():
-		fmt.Println("Shutdown signal received, stopping HTTP server...")
+		fmt.Fprintln(os.Stderr, "Shutdown signal received, stopping HTTP server...")
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 		if err := httpServer.Shutdown(shutdownCtx); err != nil {
@@ -224,10 +224,10 @@ func runStreamableHTTPServer(mcpSrv *server.MCPServer, addr, endpoint string, ct
 		if err != nil {
 			return fmt.Errorf("HTTP server stopped with error: %w", err)
 		} else {
-			fmt.Println("HTTP server stopped normally")
+			fmt.Fprintln(os.Stderr, "HTTP server stopped normally")
 		}
 	}
 
-	fmt.Println("HTTP server gracefully stopped")
+	fmt.Fprintln(os.Stderr, "HTTP server gracefully stopped")
 	return nil
 }
