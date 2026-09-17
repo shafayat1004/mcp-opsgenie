@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/mark3labs/mcp-go/server"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/client"
@@ -174,7 +175,7 @@ func runSSEServer(mcpSrv *server.MCPServer, addr, sseEndpoint, messageEndpoint s
 	select {
 	case <-ctx.Done():
 		fmt.Println("Shutdown signal received, stopping SSE server...")
-		shutdownCtx, cancel := context.WithTimeout(context.Background(), 30)
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 		if err := sseServer.Shutdown(shutdownCtx); err != nil {
 			return fmt.Errorf("error shutting down SSE server: %w", err)
@@ -214,7 +215,7 @@ func runStreamableHTTPServer(mcpSrv *server.MCPServer, addr, endpoint string, ct
 	select {
 	case <-ctx.Done():
 		fmt.Println("Shutdown signal received, stopping HTTP server...")
-		shutdownCtx, cancel := context.WithTimeout(context.Background(), 30)
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 		if err := httpServer.Shutdown(shutdownCtx); err != nil {
 			return fmt.Errorf("error shutting down HTTP server: %w", err)
