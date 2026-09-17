@@ -14,7 +14,18 @@ import (
 // listAlertQueryDescription contains comprehensive documentation for OpsGenie alert search queries.
 // This documentation is sourced from the official OpsGenie documentation:
 // https://support.atlassian.com/opsgenie/docs/search-queries-for-alerts/
-const listAlertQueryDescription = `Search query for filtering alerts. (defaults to "status:open" if not provided)
+const listAlertQueryDescription = `Search query for filtering alerts.
+
+IMPORTANT, READ BEFORE USE:
+- If omitted this DEFAULTS TO "status:open". For any historical or frequency
+  analysis that default silently excludes every closed alert and will make
+  counts wrong. Always pass an explicit query for such work.
+- "status" accepts ONLY "open" or "closed". To count alerts in a window
+  regardless of status, filter on createdAt alone and omit status entirely.
+- There is NO result limit. Results are paginated in batches of 100 up to
+  20000 alerts and returned as one JSON payload. A broad window can return
+  megabytes and overflow the caller's context. Scope every query to a narrow
+  time window (a day or a few days) and aggregate across several calls.
 
 ## Field reference for alert search
 
@@ -116,7 +127,7 @@ source, entity, tag, actions, owner, teams, acknowledgedBy, closedBy, recipients
 func (h *opsgenieHandler) registerAlertTools(s *server.MCPServer) {
 	// Define the list_alerts tooListAlertsmprehensive documentation
 	tool := mcp.NewTool("list_alerts",
-		mcp.WithDescription("Retrieve a list of alerts from OpsGenie"),
+		mcp.WithDescription("Retrieve a list of alerts from OpsGenie. Defaults to open alerts only. Returns up to 20000 alerts as a single JSON payload with no result limit, so always scope the query to a narrow time window."),
 		mcp.WithString("query",
 			mcp.Description(listAlertQueryDescription),
 		),
@@ -128,7 +139,7 @@ func (h *opsgenieHandler) registerAlertTools(s *server.MCPServer) {
 	s.AddTool(tool, h.ListAlerts)
 
 	getAlertTool := mcp.NewTool("get_alert",
-		mcp.WithDescription("Retrieves a single alert from OpsGenie using its ID, alias, or tiny ID."),
+		mcp.WithDescription("Retrieves a single alert from OpsGenie by its alert ID. Only a full alert ID works: this tool does NOT resolve an alias or a tiny ID, because the underlying request hardcodes the ALERTID identifier type."),
 		mcp.WithString("id",
 			mcp.Description("Alert id of the alert to be retrieved."),
 			mcp.Required(),
