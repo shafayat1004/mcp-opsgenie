@@ -6,6 +6,7 @@ on:
     types: [closed]
     branches:
       - main
+  workflow_dispatch:
 
 permissions:
   contents: write  # Needed to create releases and tags
@@ -15,8 +16,9 @@ jobs:
   auto_release:
     name: Auto Release
     if: >-
-      github.event.pull_request.merged &&
-      !startsWith(github.event.pull_request.title, 'Release v')
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.pull_request.merged &&
+      !startsWith(github.event.pull_request.title, 'Release v'))
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
